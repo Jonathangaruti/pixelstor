@@ -1,4 +1,3 @@
-
 package com.generation.pixelstore.controller;
 
 import java.util.List;
@@ -20,26 +19,28 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.generation.pixelstore.model.Jogo;
+import com.generation.pixelstore.repository.CategoriaRepository;
 import com.generation.pixelstore.repository.JogoRepository;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/temas")
+@RequestMapping("/jogos")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class JogoController {
     
     @Autowired
-    private JogoRepository temaRepository;
+    private JogoRepository jogoRepository;
+
     
     @GetMapping
     public ResponseEntity<List<Jogo>> getAll(){
-        return ResponseEntity.ok(temaRepository.findAll());
+        return ResponseEntity.ok(jogoRepository.findAll());
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<Jogo> getById(@PathVariable Long id){
-        return temaRepository.findById(id)
+        return jogoRepository.findById(id)
             .map(resposta -> ResponseEntity.ok(resposta))
             .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -47,33 +48,39 @@ public class JogoController {
     @GetMapping("/descricao/{descricao}")
     public ResponseEntity<List<Jogo>> getByTitle(@PathVariable 
     String descricao){
-        return ResponseEntity.ok(temaRepository
-            .findAllByDescricaoContainingIgnoreCase(descricao));
+        return ResponseEntity.ok(jogoRepository.findAllByDescricaoContainingIgnoreCase(descricao));
     }
     
     @PostMapping
-    public ResponseEntity<Jogo> post(@Valid @RequestBody Jogo tema){
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(temaRepository.save(tema));
+    public ResponseEntity<Jogo> post(@Valid @RequestBody Jogo jogo){
+    	if (jogoRepository.existsById(jogo.getCategoria().getId()))
+			return ResponseEntity.status(HttpStatus.CREATED).body(jogoRepository.save(jogo));
+		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não existe!", null);
     }
     
     @PutMapping
-    public ResponseEntity<Jogo> put(@Valid @RequestBody Jogo tema){
-        return temaRepository.findById(tema.getId())
-            .map(resposta -> ResponseEntity.status(HttpStatus.CREATED)
-            .body(temaRepository.save(tema)))
-            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<Jogo> put(@Valid @RequestBody Jogo jogo){
+    	if (jogoRepository.existsById(jogo.getId())) {
+
+			if (jogoRepository.existsById(jogo.getCategoria().getId()))
+
+				return ResponseEntity.status(HttpStatus.OK).body(jogoRepository.save(jogo));
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jogo não encontrado!", null);
+
+		}
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
     
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        Optional<Jogo> tema = temaRepository.findById(id);
+        Optional<Jogo> jogo = jogoRepository.findById(id);
         
-        if(tema.isEmpty())
+        if(jogo.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         
-        temaRepository.deleteById(id);              
+        jogoRepository.deleteById(id);              
     }
 
 }

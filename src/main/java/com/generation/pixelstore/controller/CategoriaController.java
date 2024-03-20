@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.generation.pixelstore.repository.JogoRepository;
 import com.generation.pixelstore.model.Categoria;
 import com.generation.pixelstore.repository.CategoriaRepository;
 
@@ -26,64 +25,53 @@ import jakarta.validation.Valid;
 
 
 @RestController
-@RequestMapping("/postagens")
+@RequestMapping("/categorias")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CategoriaController {
 
 	@Autowired
-	private CategoriaRepository postagemRepository;
+	private CategoriaRepository categoriaRepository;
 	
-	@Autowired
-	private JogoRepository temaRepository;
 	
 	@GetMapping
 	public ResponseEntity<List<Categoria>> getAll() {
-		return ResponseEntity.ok(postagemRepository.findAll());
+		return ResponseEntity.ok(categoriaRepository.findAll());
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Categoria> getById(@PathVariable Long id) {
-		return postagemRepository.findById(id).map(resposta -> ResponseEntity.ok(resposta))
+		return categoriaRepository.findById(id).map(resposta -> ResponseEntity.ok(resposta))
 				.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
 	
-	@GetMapping("/titulo/{titulo}")
-	public ResponseEntity<List<Categoria>> getByTitulo(@PathVariable String titulo) {
-		return ResponseEntity.ok(postagemRepository.findAllByTituloContainingIgnoreCase(titulo));
+	@GetMapping("/descricao/{descricao}")
+	public ResponseEntity<List<Categoria>> getByTitulo(@PathVariable String descricao) {
+		return ResponseEntity.ok(categoriaRepository.findAllByDescricaoContainingIgnoreCase(descricao));
 	}
 	
 	@PostMapping
-	public ResponseEntity<Categoria> post(@Valid @RequestBody Categoria postagem) {
-		if (temaRepository.existsById(postagem.getTema().getId()))
-			return ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem));
-		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tema não existe!", null);
+	public ResponseEntity<Categoria> post(@Valid @RequestBody Categoria categoria) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(categoriaRepository.save(categoria));
 	}
 
 	
 	@PutMapping
-	public ResponseEntity<Categoria> put(@Valid @RequestBody Categoria postagem) {
-		if (postagemRepository.existsById(postagem.getId())) {
-			
-			if (temaRepository.existsById(postagem.getTema(). getId()))
-				return ResponseEntity.status(HttpStatus.OK)
-						.body(postagemRepository.save(postagem));
-		
-		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tema não existe!", null);
-
-}
-	
-	return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	public ResponseEntity<Categoria> put(@Valid @RequestBody Categoria categoria) {
+		return categoriaRepository.findById(categoria.getId())
+	            .map(resposta -> ResponseEntity.status(HttpStatus.CREATED)
+	            .body(categoriaRepository.save(categoria)))
+	            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	
 	}
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{id}")
 	public void delete(@PathVariable Long id) {
-		Optional<Categoria> postagem = postagemRepository.findById(id);
+		Optional<Categoria> categoria = categoriaRepository.findById(id);
 
-		if (postagem.isEmpty())
+		if (categoria.isEmpty())
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
-		postagemRepository.deleteById(id);
+		categoriaRepository.deleteById(id);
 	}
 	
 
