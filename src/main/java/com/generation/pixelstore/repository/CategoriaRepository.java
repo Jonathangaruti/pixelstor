@@ -11,6 +11,6 @@ import com.generation.pixelstore.model.Categoria;
 @Repository
 public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
 	
-	public List <Categoria> findAllByTituloContainingIgnoreCase(@Param("titulo")String titulo);
+	public List <Categoria> findAllByDescricaoContainingIgnoreCase(@Param("descricao")String descricao);
 
 }
